@@ -9,42 +9,48 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.example.diarythink.bean.TaskInfo;
+import com.example.diarythink.views.ItemTaskView;
 
 import java.util.ArrayList;
 
 public class MainActivity extends Activity {
 
-    private CheckBox cbOk;
-    private TextView tvDescripe;
-    private ListView lvEventList;
+//    private ListView lvEventList;
+    private LinearLayout llContent;
     private ArrayList<TaskInfo> arrayList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.my_scrollview);
+        setContentView(R.layout.activity_main);
 //        initData();
-//        initView();
+        initView();
     }
 
     private void initData(){
-        /*for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; i++) {
            TaskInfo taskInfo = new TaskInfo(false,"任务--"+i);
             arrayList.add(taskInfo);
-        }*/
+        }
     }
 
     private void initView() {
-        lvEventList = (ListView) findViewById(R.id.lv_event_list);
-        cbOk = (CheckBox) findViewById(R.id.cb_ok);
-        tvDescripe = (TextView) findViewById(R.id.tv_descripe);
-        lvEventList.setAdapter(new ThingsAdapter(arrayList));
+        llContent = (LinearLayout) findViewById(R.id.ll_content);
+//        lvEventList = new ListView(this);
+        for (int i = 0; i < 20; i++) {
+            ItemTaskView itemTaskView = new ItemTaskView(this);
+            llContent.addView(itemTaskView);
+        }
+//        lvEventList.setAdapter(new ThingsAdapter(arrayList));
 
     }
 
-    class ThingsAdapter extends BaseAdapter{
+   /* class ThingsAdapter extends BaseAdapter{
 
         private ArrayList<TaskInfo> taskInfoList = new ArrayList<TaskInfo>();
         public ThingsAdapter(ArrayList<TaskInfo> list){
@@ -98,5 +104,5 @@ public class MainActivity extends Activity {
             CheckBox checkBox;
             TextView textView;
         }
-    }
+    }*/
 }

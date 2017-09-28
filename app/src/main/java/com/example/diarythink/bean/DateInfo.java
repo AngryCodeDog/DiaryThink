@@ -1,4 +1,4 @@
-package com.example.diarythink;
+package com.example.diarythink.bean;
 
 /**
  * Created by zhuyupei on 2017/9/26 0026.

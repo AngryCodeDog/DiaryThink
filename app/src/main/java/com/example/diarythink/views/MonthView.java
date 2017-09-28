@@ -1,4 +1,4 @@
-package com.example.diarythink;
+package com.example.diarythink.views;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -7,6 +7,9 @@ import android.graphics.Paint;
 import android.graphics.Region;
 import android.util.AttributeSet;
 import android.view.View;
+
+import com.example.diarythink.bean.DateInfo;
+import com.example.diarythink.utils.DateUtils;
 
 import java.util.Calendar;
 

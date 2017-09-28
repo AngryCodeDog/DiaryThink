@@ -1,4 +1,4 @@
-package com.example.diarythink;
+package com.example.diarythink.utils;
 
 import android.util.Log;
 
