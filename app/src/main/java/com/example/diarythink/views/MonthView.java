@@ -33,6 +33,10 @@ public class MonthView extends View {
     private int curYear,curMonth;
     private int rightYear,rightMonth;
 
+    private int mLastX;
+    private int mLastY;
+
+
     public MonthView(Context context) {
         this(context,null);
     }
@@ -117,7 +121,44 @@ public class MonthView extends View {
         paint.setStyle(Paint.Style.STROKE);
         for (int i = 0; i < monthRegionsSix.length; i++) {
             for (int j = 0; j < monthRegionsSix[i].length; j++) {
-                canvas.drawRect(monthRegionsSix[i][j].getBounds(),paint);
+//                canvas.drawRect(monthRegionsSix[i][j].getBounds(),paint);
+                int topLeftCornerX = monthRegionsSix[i][j].getBounds().left;
+                int topLeftCornerY = monthRegionsSix[i][j].getBounds().top;
+                int bottomRightCornerX = monthRegionsSix[i][j].getBounds().right;
+                int bottomRightCornerY = monthRegionsSix[i][j].getBounds().bottom;
+                int rectHeight = monthRegionsSix[i][j].getBounds().height();
+                int rectWidth = monthRegionsSix[i][j].getBounds().width();
+
+                //画矩形上线条
+                int tempLeftX = (j == 0 ? topLeftCornerX + 8 : topLeftCornerX);
+                int tempRightX = (j == monthRegionsSix[i].length-1 ? bottomRightCornerX - 8 : bottomRightCornerX);
+                canvas.drawLine(tempLeftX,
+                        topLeftCornerY,
+                        tempRightX,
+                        bottomRightCornerY-rectHeight,paint);
+
+                //下线条
+                if(i == monthRegionsSix.length-1) {//只有最下边一条矩形框需要绘制底部线条
+                    canvas.drawLine(tempLeftX,
+                            topLeftCornerY + rectHeight,
+                            tempRightX,
+                            bottomRightCornerY, paint);
+                }
+
+                //左线条
+                if(j!=0) {//最左边不画线条
+                    canvas.drawLine(topLeftCornerX,
+                            topLeftCornerY + 8,
+                            bottomRightCornerX - rectWidth,
+                            bottomRightCornerY - 8, paint);
+                }
+                //右线条
+                if(j != monthRegionsSix[i].length-1) {//最右边不画线条
+                    canvas.drawLine(topLeftCornerX + rectWidth,
+                            topLeftCornerY + 8,
+                            bottomRightCornerX,
+                            bottomRightCornerY - 8, paint);
+                }
             }
         }
 
@@ -135,18 +176,27 @@ public class MonthView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.e("TAG",""+event.getAction());
+        int x = (int) event.getRawX();
+        int y = (int) event.getRawY();
+
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
-                Log.e("TAG","ACTION_DOWN"+event.getX()+""+event.getY());
                 break;
             case MotionEvent.ACTION_MOVE:
-                Log.e("TAG","ACTION_DOWN"+event.getX()+""+event.getY());
+                int deltaX = x - mLastX;
+                int deltaY = y - mLastY;
+                if (Math.abs(deltaX) > 100) {
+
+                }
                 break;
             case MotionEvent.ACTION_UP:
-                Log.e("TAG","ACTION_DOWN"+event.getX()+""+event.getY());
                 break;
+
         }
-        return  super.onTouchEvent(event);
+
+
+        mLastX = x;
+        mLastY = y;
+        return true;
     }
 }
