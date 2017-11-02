@@ -9,8 +9,8 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Scroller;
 
-import com.example.diarythink.bean.DateInfo;
 import com.example.diarythink.utils.DateUtils;
 
 import java.util.Calendar;
@@ -21,20 +21,51 @@ import java.util.Calendar;
 
 public class MonthView extends View {
 
-    private final Region[][] monthRegionsFour = new Region[4][7];
-    private final Region[][] monthRegionsFive = new Region[5][7];
     private final Region[][] monthRegionsSix = new Region[6][7];
 
-    private final DateInfo[][] infoFour = new DateInfo[4][7];
-    private final DateInfo[][] infoFive = new DateInfo[5][7];
-    private final DateInfo[][] infoSix = new DateInfo[6][7];
 
-    private int leftYear,leftMonth;
-    private int curYear,curMonth;
-    private int rightYear,rightMonth;
+    /**
+     * 当前界面显示的年份
+     */
+    private int curPageYear;
+    /**
+     * 目前界面显示的月份
+     */
+    private int curPageMonth;
+    /**
+     * 真实的当前月份
+     */
+    private int realCurMonth;
 
-    private int mLastX;
-    private int mLastY;
+    /**
+     * 真实的当前年份
+     */
+    private int realCurYear;
+
+
+
+    /**
+     * 点击事件ACTION_DOWN的x坐标
+     */
+    int downX = 0;
+    /**
+     * 点击事件ACTION_DOWN的y坐标
+     */
+    int downY = 0;
+
+    /**当前界面所在下标*/
+    int curPageIndex = 0;
+
+    /**
+     * view上一次移动后的最后位置
+     */
+    int lastMoveX = 0;
+    /**
+     * 屏幕宽度
+     */
+    private int width;
+
+    private Scroller mScroller;
 
 
     public MonthView(Context context) {
@@ -49,18 +80,12 @@ public class MonthView extends View {
         super(context, attrs, defStyleAttr);
         //当前
         Calendar calendar = Calendar.getInstance();
-        curYear = calendar.get(Calendar.YEAR);
-        curMonth = calendar.get(Calendar.YEAR);
-        //左边
-        calendar.add(Calendar.YEAR,-1);
-        leftYear = calendar.get(Calendar.YEAR);
-        leftMonth = calendar.get(Calendar.YEAR);
+        curPageYear = calendar.get(Calendar.YEAR);
+        realCurYear = calendar.get(Calendar.YEAR);
+        curPageMonth = calendar.get(Calendar.MONTH);
+        realCurMonth = calendar.get(Calendar.MONTH);
 
-        //右边
-        calendar = Calendar.getInstance();
-        calendar.add(Calendar.YEAR,1);
-        rightYear = calendar.get(Calendar.YEAR);
-        rightMonth = calendar.get(Calendar.YEAR);
+        mScroller = new Scroller(context);
     }
 
 
@@ -73,6 +98,7 @@ public class MonthView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 
+        width = w;
         initRegion(w, h);
     }
 
@@ -80,22 +106,6 @@ public class MonthView extends View {
         int cellW = (int) (w / 7F);
         int cellH = (int) (h / 6F);
 
-        for (int i = 0; i < monthRegionsFour.length; i++) {
-            for (int j = 0; j < monthRegionsFour[i].length; j++) {
-                Region region = new Region();
-                region.set(j * cellW, i * cellH, cellW + (j * cellW),
-                        cellW + (i * cellH));
-                monthRegionsFour[i][j] = region;
-            }
-        }
-        for (int i = 0; i < monthRegionsFive.length; i++) {
-            for (int j = 0; j < monthRegionsFive[i].length; j++) {
-                Region region = new Region();
-                region.set(j * cellW, i * cellH, cellW + (j * cellW),
-                        cellW + (i * cellH));
-                monthRegionsFive[i][j] = region;
-            }
-        }
         for (int i = 0; i < monthRegionsSix.length; i++) {
             for (int j = 0; j < monthRegionsSix[i].length; j++) {
                 Region region = new Region();
@@ -108,8 +118,11 @@ public class MonthView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        Paint paint = new Paint();
+        draw(canvas,(width* (curPageIndex - 1)),0, curPageYear, curPageMonth);
 
+        draw(canvas,width * curPageIndex,0, curPageYear, curPageMonth +1);
+
+        draw(canvas,width * (curPageIndex + 1),0, curPageYear, curPageMonth +2);
 
     }
 
@@ -166,37 +179,76 @@ public class MonthView extends View {
         paint.setStyle(Paint.Style.STROKE);
         paint.setTextSize(50);
         String[][] dateData = DateUtils.buildMonthG(year,month);
-        for (int i = 0; i < infoSix.length; i++) {
-            for (int j = 0; j < infoSix[i].length; j++) {
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 7; j++) {
                 float yy = monthRegionsSix[i][j].getBounds().centerY()+paint.descent();
                 canvas.drawText(dateData[i][j],monthRegionsSix[i][j].getBounds().centerX(),yy,paint);
             }
         }
+        canvas.restore();
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        int x = (int) event.getRawX();
-        int y = (int) event.getRawY();
-
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
+                mScroller.forceFinished(true);
+                downX = (int) event.getRawX();
+                downY = (int) event.getRawY();
                 break;
             case MotionEvent.ACTION_MOVE:
-                int deltaX = x - mLastX;
-                int deltaY = y - mLastY;
-                if (Math.abs(deltaX) > 100) {
-
+                if (Math.abs(downX - event.getX()) > 100) {
+                    int totalMoveX = (int) (downX - event.getX()) + lastMoveX ;
+                    smoothScrollTo(totalMoveX, 0);
+                } else if (Math.abs(downY - event.getY()) > 50) {
                 }
                 break;
             case MotionEvent.ACTION_UP:
-                break;
 
+                if (Math.abs(downX - event.getX()) > 25) {
+                    if (downX > event.getX()
+                            && Math.abs(downX - event.getX()) >= width/5) {
+                        curPageIndex++;
+                    }else if (downX < event.getX()
+                            && Math.abs(downX - event.getX()) >= width/5) {
+                        curPageIndex--;
+                    }
+                }
+                smoothScrollTo(width * curPageIndex, 0);
+                //获取上一次滑动的距离
+                lastMoveX = width * curPageIndex;
+                //当前界面显示的月份
+                Calendar calendar = Calendar.getInstance();
+                calendar.add(Calendar.MONTH,curPageIndex);
+                curPageMonth = calendar.get(Calendar.MONTH);
+                curPageYear = calendar.get(Calendar.YEAR);
+
+                Log.e("TAG", curPageYear +"-"+(1+curPageMonth));
+                Log.e("TAG","curPageIndex="+curPageIndex+"");
+                break;
         }
 
+        return super.onTouchEvent(event);
+    }
 
-        mLastX = x;
-        mLastY = y;
-        return true;
+    private void smoothScrollTo(int fx, int fy) {
+        //预计目标点 到  view前一次滚动后 的最终点 的距离，即这次view需要滚动多远
+        int dx = fx - mScroller.getFinalX();
+        int dy = fy - mScroller.getFinalY();
+        smoothScrollBy(dx, dy);
+    }
+
+
+    private void smoothScrollBy(int dx, int dy) {
+        mScroller.startScroll(mScroller.getFinalX(), mScroller.getFinalY(), dx,dy, 500);
+        invalidate();
+    }
+
+    @Override
+    public void computeScroll() {
+        if (mScroller.computeScrollOffset()) {
+            scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
+            invalidate();
+        }
     }
 }

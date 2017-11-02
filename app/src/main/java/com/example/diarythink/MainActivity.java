@@ -42,10 +42,10 @@ public class MainActivity extends Activity {
     private void initView() {
         llContent = (LinearLayout) findViewById(R.id.ll_content);
 //        lvEventList = new ListView(this);
-        for (int i = 0; i < 20; i++) {
-            ItemTaskView itemTaskView = new ItemTaskView(this);
-            llContent.addView(itemTaskView);
-        }
+//        for (int i = 0; i < 20; i++) {
+//            ItemTaskView itemTaskView = new ItemTaskView(this);
+//            llContent.addView(itemTaskView);
+//        }
 //        lvEventList.setAdapter(new ThingsAdapter(arrayList));
 
     }
