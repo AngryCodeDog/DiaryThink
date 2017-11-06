@@ -67,6 +67,12 @@ public class MonthView extends View {
 
     private Scroller mScroller;
 
+    OnMonthChangeListener onMonthChangeListener;
+
+    private String[][] dateData;
+
+    private Canvas mCanvas;
+
 
     public MonthView(Context context) {
         this(context,null);
@@ -118,6 +124,7 @@ public class MonthView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        mCanvas = canvas;
         draw(canvas,(width* (curPageIndex - 1)),0, curPageYear, curPageMonth);
 
         draw(canvas,width * curPageIndex,0, curPageYear, curPageMonth +1);
@@ -177,12 +184,12 @@ public class MonthView extends View {
 
         paint.setColor(Color.BLACK);
         paint.setStyle(Paint.Style.STROKE);
-        paint.setTextSize(50);
-        String[][] dateData = DateUtils.buildMonthG(year,month);
+        paint.setTextSize(25);
+        dateData = DateUtils.buildMonthG(year,month);
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 7; j++) {
-                float yy = monthRegionsSix[i][j].getBounds().centerY()+paint.descent();
-                canvas.drawText(dateData[i][j],monthRegionsSix[i][j].getBounds().centerX(),yy,paint);
+                float yy = monthRegionsSix[i][j].getBounds().centerY()-(paint.descent()+paint.ascent())/2;
+                canvas.drawText(dateData[i][j],monthRegionsSix[i][j].getBounds().centerX()-paint.descent(),yy,paint);
             }
         }
         canvas.restore();
@@ -225,6 +232,19 @@ public class MonthView extends View {
 
                 Log.e("TAG", curPageYear +"-"+(1+curPageMonth));
                 Log.e("TAG","curPageIndex="+curPageIndex+"");
+                if(onMonthChangeListener != null){
+                    onMonthChangeListener.monthChange(curPageMonth,curPageYear);
+                }
+
+
+                monthRegionsSix[0][0].getBounds().contains((int)event.getRawX(),(int)event.getRawY());
+                int dateX = Math.round(event.getX()/monthRegionsSix[0][0].getBounds().width()) - 1;
+                int dateY = Math.round(event.getY()/monthRegionsSix[0][0].getBounds().height()) - 1;
+                dateData = DateUtils.buildMonthG(curPageYear,curPageMonth+1);
+                Log.e("TAG",curPageMonth+1 + "-" +dateData[dateY][dateX]);
+
+
+
                 break;
         }
 
@@ -251,4 +271,18 @@ public class MonthView extends View {
             invalidate();
         }
     }
+
+    public void setOnMonthChangeListener(OnMonthChangeListener onMonthChangeListener){
+        this.onMonthChangeListener = onMonthChangeListener;
+    }
+
+
+    public interface OnMonthChangeListener{
+        void monthChange(int month,int year);
+    }
+
+    public interface OnClickDateListener{
+        void clickDate(int month,int date);
+    }
+
 }

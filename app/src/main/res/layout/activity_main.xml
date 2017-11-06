@@ -4,7 +4,40 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="#e94d4e"
+        >
+        <TextView
+            android:id="@+id/tv_year"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2017"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:textColor="#ffffff"
+            android:textSize="20dp"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/bg_year"/>
+
+        <com.example.diarythink.views.HeaderMonthView
+            android:id="@+id/hmv_month"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+
+
+    </LinearLayout>
     <include layout="@layout/top_week_title"/>
+
 
 
     <com.example.diarythink.views.MyScrollView
@@ -15,6 +48,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
             <com.example.diarythink.views.MonthView
+                android:id="@+id/mv_mouth_detail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clickable="true"/>

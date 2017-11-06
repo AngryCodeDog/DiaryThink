@@ -14,15 +14,20 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.diarythink.bean.TaskInfo;
+import com.example.diarythink.views.HeaderMonthView;
 import com.example.diarythink.views.ItemTaskView;
+import com.example.diarythink.views.MonthView;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class MainActivity extends Activity {
 
 //    private ListView lvEventList;
     private LinearLayout llContent;
     private ArrayList<TaskInfo> arrayList = new ArrayList<>();
+    private MonthView monthView;
+    private HeaderMonthView headerMonthView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +46,18 @@ public class MainActivity extends Activity {
 
     private void initView() {
         llContent = (LinearLayout) findViewById(R.id.ll_content);
+        headerMonthView = (HeaderMonthView) findViewById(R.id.hmv_month);
+        final TextView tvYear = (TextView) findViewById(R.id.tv_year);
+        monthView = (MonthView) findViewById(R.id.mv_mouth_detail);
+        monthView.setOnMonthChangeListener(new MonthView.OnMonthChangeListener() {
+            @Override
+            public void monthChange(int month, int year) {
+                headerMonthView.setCurMouth(month,year);
+                tvYear.setText(year+"");
+            }
+        });
+        Calendar calendar = Calendar.getInstance();
+        headerMonthView.setCurMouth(calendar.get(Calendar.MONTH),calendar.get(Calendar.YEAR));
 //        lvEventList = new ListView(this);
 //        for (int i = 0; i < 20; i++) {
 //            ItemTaskView itemTaskView = new ItemTaskView(this);
