@@ -12,6 +12,7 @@ import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.diarythink.bean.TaskInfo;
 import com.example.diarythink.views.HeaderMonthView;
@@ -54,8 +55,25 @@ public class MainActivity extends Activity {
             public void monthChange(int month, int year) {
                 headerMonthView.setCurMouth(month,year);
                 tvYear.setText(year+"");
+                Toast.makeText(MainActivity.this,(month+1)+"月",Toast.LENGTH_SHORT).show();
             }
         });
+        monthView.setOnClickDateListener(new MonthView.OnClickDateListener() {
+            @Override
+            public void clickDate(int month, int date) {
+                Toast.makeText(MainActivity.this,month+"-"+date,Toast.LENGTH_SHORT).show();
+            }
+        });
+        headerMonthView.setOnClickHeaderMonthListener(new HeaderMonthView.OnClickHeaderMonthListener() {
+            @Override
+            public void onMonthClickChange(int month, int year) {
+                Toast.makeText(MainActivity.this,year+"-"+(month+1),Toast.LENGTH_SHORT).show();
+                monthView.setCurMonth(month,year);
+                headerMonthView.setCurMouth(month,year);
+                tvYear.setText(year+"");
+            }
+        });
+
         Calendar calendar = Calendar.getInstance();
         headerMonthView.setCurMouth(calendar.get(Calendar.MONTH),calendar.get(Calendar.YEAR));
 //        lvEventList = new ListView(this);

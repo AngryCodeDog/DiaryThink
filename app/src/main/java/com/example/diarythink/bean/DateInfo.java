@@ -15,4 +15,10 @@ public class DateInfo {
     public boolean festival;
     /**是否是假日*/
     public boolean holiday;
+    /**所属月份*/
+    public int month;
+    /**所属年份*/
+    public int year;
+
+    public String desc;
 }

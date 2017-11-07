@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.Region;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 
 import com.example.diarythink.HeaderMonthInfo;
@@ -21,11 +22,16 @@ public class HeaderMonthView extends View {
 
     Region[] monthRegionsSeven = new Region[7];
     String[] monthStr = {"1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"};
+    //头部月份信息，里面存的月份是系统的计算方式，0代表1月，1代表2月，等等
     HeaderMonthInfo[] headerMonthInfoList = new HeaderMonthInfo[7];
     private int curMouth = 0;
     private int curYear = 0;
 
+    private int downX;
+    private int downY;
 
+
+    private OnClickHeaderMonthListener onClickHeaderMonthListener;
 
     private void initData(int year,int month){
         //初始化7个数据
@@ -172,6 +178,40 @@ public class HeaderMonthView extends View {
             }
             canvas.restore();
         }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                downX = (int) event.getRawX();
+                downY = (int) event.getRawY();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                break;
+            case MotionEvent.ACTION_UP:
+
+                if (Math.abs(downX - event.getRawX()) < 10) {//判断是点击还是滑动
+                    int dateX = (int) (Math.ceil(event.getX()/monthRegionsSeven[0].getBounds().width()) - 1);
+                    if(onClickHeaderMonthListener != null){
+                        dateX = dateX > 0 ? dateX:0;
+                        onClickHeaderMonthListener.onMonthClickChange(headerMonthInfoList[dateX].getMonth(),headerMonthInfoList[dateX].getYear());
+                    }
+                }
+                break;
+
+        }
+        return super.onTouchEvent(event);
+
+    }
+
+    public void setOnClickHeaderMonthListener(OnClickHeaderMonthListener onClickHeaderMonthListener){
+        this.onClickHeaderMonthListener = onClickHeaderMonthListener;
+    }
+
+
+    public interface OnClickHeaderMonthListener{
+        void onMonthClickChange(int month, int year);
     }
 
 }

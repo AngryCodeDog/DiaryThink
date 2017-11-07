@@ -5,18 +5,22 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Region;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Scroller;
 
+import com.example.diarythink.bean.DateInfo;
 import com.example.diarythink.utils.DateUtils;
 
 import java.util.Calendar;
 
 /**
  * Created by zhuyupei on 2017/9/26 0026.
+ * 通过一个6*7的数组来展现日历数据
+ * 通过三个6*7的数组来分别展示左右和当前月份的数据
  */
 
 public class MonthView extends View {
@@ -29,7 +33,7 @@ public class MonthView extends View {
      */
     private int curPageYear;
     /**
-     * 目前界面显示的月份
+     * 目前界面显示的月份(比实际月份少1）
      */
     private int curPageMonth;
     /**
@@ -68,8 +72,10 @@ public class MonthView extends View {
     private Scroller mScroller;
 
     OnMonthChangeListener onMonthChangeListener;
+    OnClickDateListener onClickDateListener;
 
-    private String[][] dateData;
+
+    private DateInfo[][] dateInfoArray = new DateInfo[6][7];
 
     private Canvas mCanvas;
 
@@ -112,6 +118,7 @@ public class MonthView extends View {
         int cellW = (int) (w / 7F);
         int cellH = (int) (h / 6F);
 
+        //初始化6*7的绘图区域
         for (int i = 0; i < monthRegionsSix.length; i++) {
             for (int j = 0; j < monthRegionsSix[i].length; j++) {
                 Region region = new Region();
@@ -122,18 +129,36 @@ public class MonthView extends View {
         }
     }
 
+    public void setCurMonth(int month,int year){
+//        curPageIndex = 0;
+        curPageMonth = month;
+        curPageYear = year;
+        lastMoveX = 0;
+        requestLayout();
+        invalidate();
+    }
+
+
     @Override
     protected void onDraw(Canvas canvas) {
         mCanvas = canvas;
-        draw(canvas,(width* (curPageIndex - 1)),0, curPageYear, curPageMonth);
-
-        draw(canvas,width * curPageIndex,0, curPageYear, curPageMonth +1);
-
-        draw(canvas,width * (curPageIndex + 1),0, curPageYear, curPageMonth +2);
+        Log.e("TAG","MonthView--onDraw");
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(curPageYear,curPageMonth,1);
+        //画左边界面的日历
+        calendar.add(Calendar.MONTH,-1);
+        draw(canvas,(width* (curPageIndex - 1)),0, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+        //画当前界面的日历
+        calendar.add(Calendar.MONTH,1);
+        draw(canvas,width * curPageIndex,0, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+        //画右边界面的日历
+        calendar.add(Calendar.MONTH,1);
+        draw(canvas,width * (curPageIndex + 1),0,calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH));
 
     }
 
     private void draw(Canvas canvas,int x,int y,int year,int month){
+        Log.e("TAG","MonthView--Draw: "+year+"-"+month);
         canvas.save();
         canvas.translate(x,0);
         Paint paint = new Paint();
@@ -141,7 +166,6 @@ public class MonthView extends View {
         paint.setStyle(Paint.Style.STROKE);
         for (int i = 0; i < monthRegionsSix.length; i++) {
             for (int j = 0; j < monthRegionsSix[i].length; j++) {
-//                canvas.drawRect(monthRegionsSix[i][j].getBounds(),paint);
                 int topLeftCornerX = monthRegionsSix[i][j].getBounds().left;
                 int topLeftCornerY = monthRegionsSix[i][j].getBounds().top;
                 int bottomRightCornerX = monthRegionsSix[i][j].getBounds().right;
@@ -149,7 +173,7 @@ public class MonthView extends View {
                 int rectHeight = monthRegionsSix[i][j].getBounds().height();
                 int rectWidth = monthRegionsSix[i][j].getBounds().width();
 
-                //画矩形上线条
+                //画矩形区域上线条
                 int tempLeftX = (j == 0 ? topLeftCornerX + 8 : topLeftCornerX);
                 int tempRightX = (j == monthRegionsSix[i].length-1 ? bottomRightCornerX - 8 : bottomRightCornerX);
                 canvas.drawLine(tempLeftX,
@@ -185,13 +209,27 @@ public class MonthView extends View {
         paint.setColor(Color.BLACK);
         paint.setStyle(Paint.Style.STROKE);
         paint.setTextSize(25);
-        dateData = DateUtils.buildMonthG(year,month);
+        dateInfoArray = DateUtils.buildMonthG(year,month);
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 7; j++) {
-                float yy = monthRegionsSix[i][j].getBounds().centerY()-(paint.descent()+paint.ascent())/2;
-                canvas.drawText(dateData[i][j],monthRegionsSix[i][j].getBounds().centerX()-paint.descent(),yy,paint);
+                if(dateInfoArray[i][j].date != 0 ) {
+                    float yy = monthRegionsSix[i][j].getBounds().centerY() - (paint.descent() + paint.ascent()) / 2;
+                    canvas.drawText(dateInfoArray[i][j].date + "", monthRegionsSix[i][j].getBounds().centerX() - paint.descent(), yy, paint);
+                    if(!TextUtils.isEmpty(dateInfoArray[i][j].desc)){//如果有备注信息，则绘制备注信息
+                        Paint paint1 = new Paint();
+                        paint1.setColor(Color.YELLOW);
+                        paint1.setStyle(Paint.Style.STROKE);
+                        paint1.setStrokeWidth(3f);
+                        canvas.drawRect(monthRegionsSix[i][j].getBounds(),paint1);
+                        paint1.setStrokeWidth(1f);
+                        paint1.setTextSize(20);
+                        paint1.setStyle(Paint.Style.FILL_AND_STROKE);
+                        canvas.drawText(dateInfoArray[i][j].desc,monthRegionsSix[i][j].getBounds().left + paint1.descent(), yy-(paint.ascent()+paint.descent())+5, paint1);
+                    }
+                }
             }
         }
+
         canvas.restore();
     }
 
@@ -212,42 +250,47 @@ public class MonthView extends View {
                 break;
             case MotionEvent.ACTION_UP:
 
+                //当前界面显示的月份
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(curPageYear,curPageMonth,1);//更改到当前界面的日期
+
                 if (Math.abs(downX - event.getX()) > 25) {
                     if (downX > event.getX()
                             && Math.abs(downX - event.getX()) >= width/5) {
                         curPageIndex++;
+                        calendar.add(Calendar.MONTH,1);//切换日期
                     }else if (downX < event.getX()
                             && Math.abs(downX - event.getX()) >= width/5) {
                         curPageIndex--;
+                        calendar.add(Calendar.MONTH,-1);//切换日期
                     }
                 }
                 smoothScrollTo(width * curPageIndex, 0);
-                //获取上一次滑动的距离
+                //保存滑动的距离
                 lastMoveX = width * curPageIndex;
-                //当前界面显示的月份
-                Calendar calendar = Calendar.getInstance();
-                calendar.add(Calendar.MONTH,curPageIndex);
+
                 curPageMonth = calendar.get(Calendar.MONTH);
                 curPageYear = calendar.get(Calendar.YEAR);
 
-                Log.e("TAG", curPageYear +"-"+(1+curPageMonth));
-                Log.e("TAG","curPageIndex="+curPageIndex+"");
-                if(onMonthChangeListener != null){
+//                Log.e("TAG","curPageIndex="+curPageIndex);
+
+                if(Math.abs(downX - event.getX()) > 25 && Math.abs(downX - event.getX()) >= width/5 && onMonthChangeListener != null){//界面是否切换了月份
                     onMonthChangeListener.monthChange(curPageMonth,curPageYear);
                 }
 
-
-                monthRegionsSix[0][0].getBounds().contains((int)event.getRawX(),(int)event.getRawY());
-                int dateX = Math.round(event.getX()/monthRegionsSix[0][0].getBounds().width()) - 1;
-                int dateY = Math.round(event.getY()/monthRegionsSix[0][0].getBounds().height()) - 1;
-                dateData = DateUtils.buildMonthG(curPageYear,curPageMonth+1);
-                Log.e("TAG",curPageMonth+1 + "-" +dateData[dateY][dateX]);
-
-
-
+                if (Math.abs(downX - event.getX()) < 10) {//判断是点击还是滑动
+                    //直接通过坐标来计算出所属区域，再得到日期信息
+                    int dateX = (int) (Math.ceil(event.getX()/monthRegionsSix[0][0].getBounds().width()) - 1);
+                    int dateY = (int) (Math.ceil(event.getY()/monthRegionsSix[0][0].getBounds().height()) - 1);
+                    dateInfoArray = DateUtils.buildMonthG(curPageYear,curPageMonth+1);
+                    if (onClickDateListener != null) {
+                        dateX = dateX > 0 ? dateX : 0;
+                        dateY = dateY > 0 ? dateY : 0;
+                        onClickDateListener.clickDate(dateInfoArray[dateY][dateX].month, dateInfoArray[dateY][dateX].date);
+                    }
+                }
                 break;
         }
-
         return super.onTouchEvent(event);
     }
 
@@ -274,6 +317,9 @@ public class MonthView extends View {
 
     public void setOnMonthChangeListener(OnMonthChangeListener onMonthChangeListener){
         this.onMonthChangeListener = onMonthChangeListener;
+    }
+    public void setOnClickDateListener(OnClickDateListener onClickDateListener){
+        this.onClickDateListener = onClickDateListener;
     }
 
 

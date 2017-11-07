@@ -2,6 +2,8 @@ package com.example.diarythink.utils;
 
 import android.util.Log;
 
+import com.example.diarythink.bean.DateInfo;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -23,9 +25,10 @@ public class DateUtils {
      * @param month 某月
      * @return 某年某月的公历数组
      */
-    public static String[][] buildMonthG(int year, int month) {
-        String[][] tmp = new String[6][7];
+    public static DateInfo[][] buildMonthG(int year, int month) {
+        DateInfo[][] tmp = new DateInfo[6][7];
 
+        month = month +1;//真实月份
         //确定一个月有多少天
         int daysInMonth = 0;
         if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 ||
@@ -44,7 +47,8 @@ public class DateUtils {
         //初始化给数组赋值为空字符串
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 7; j++) {
-                tmp[i][j] = "";
+                tmp[i][j] = new DateInfo();
+                tmp[i][j].date = 0;
             }
         }
 
@@ -54,7 +58,14 @@ public class DateUtils {
             for (int j = 0; j < 7; j++) {
                 if(day <= daysInMonth) {
                     j = getDayOfWeek(year, month, day) - 1;
-                    tmp[i][j] = day + "";
+                    tmp[i][j].date = day;
+                    tmp[i][j].dayOfWeek = j;
+                    tmp[i][j].month = month;
+                    tmp[i][j].year = year;
+                    if(i == 1 && j == 3){
+                        tmp[i][j].desc = "待还1000";
+                    }
+
                     day++;
                 }
             }
