@@ -1,13 +1,10 @@
 package com.example.diarythink.utils;
 
-import android.util.Log;
+
 
 import com.example.diarythink.bean.DateInfo;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Created by zhuyupei on 2017/9/26 0026.
@@ -28,15 +25,15 @@ public class DateUtils {
     public static DateInfo[][] buildMonthG(int year, int month) {
         DateInfo[][] tmp = new DateInfo[6][7];
 
-        month = month +1;//真实月份
+        int realMonth = month +1;//真实月份
         //确定一个月有多少天
         int daysInMonth = 0;
-        if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 ||
-                month == 12) {
+        if (realMonth == 1 || realMonth == 3 || realMonth == 5 || realMonth == 7 || realMonth == 8 || realMonth == 10 ||
+                realMonth == 12) {
             daysInMonth = 31;
-        } else if (month == 4 || month == 6 || month == 9 || month == 11) {
+        } else if (realMonth == 4 || realMonth == 6 || realMonth == 9 || realMonth == 11) {
             daysInMonth = 30;
-        } else if (month == 2) {
+        } else if (realMonth == 2) {
             if (isLeapYear(year)) {
                 daysInMonth = 29;
             } else {
@@ -62,14 +59,38 @@ public class DateUtils {
                     tmp[i][j].dayOfWeek = j;
                     tmp[i][j].month = month;
                     tmp[i][j].year = year;
-                    if(i == 1 && j == 3){
-                        tmp[i][j].desc = "待还1000";
-                    }
-
                     day++;
                 }
             }
         }
+
+        //在第一排插入上月的日期信息
+        Calendar calendar= Calendar.getInstance();
+        calendar.set(year,month,1);//设置为这个月第一天
+        for (int i = 6; i >= 0; i--) {
+            if(tmp[0][i].date == 0){
+                calendar.add(Calendar.DATE,-1);
+                tmp[0][i].date = calendar.get(Calendar.DATE);
+                tmp[0][i].dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+                tmp[0][i].month = calendar.get(Calendar.MONTH);
+                tmp[0][i].year = calendar.get(Calendar.YEAR);
+            }
+        }
+        //在倒数第二排开始插入下个月的信息
+        Calendar calendar1= Calendar.getInstance();
+        calendar1.set(year,month,daysInMonth);//设置为这个月最后一天
+        for (int i = 4; i < 6 ; i++) {
+            for (int j = 0; j < 7; j++) {
+                if(tmp[i][j].date == 0){
+                    calendar1.add(Calendar.DATE,1);
+                    tmp[i][j].date = calendar1.get(Calendar.DATE);
+                    tmp[i][j].dayOfWeek = calendar1.get(Calendar.DAY_OF_WEEK);
+                    tmp[i][j].month = calendar1.get(Calendar.MONTH);
+                    tmp[i][j].year = calendar1.get(Calendar.YEAR);
+                }
+            }
+        }
+
         return tmp;
     }
 
@@ -83,24 +104,9 @@ public class DateUtils {
      * @return
      */
     public static int getDayOfWeek(int year,int month,int day){
-        //把年月日格式化成yyyy-MM-dd格式的
-        StringBuilder sb = new StringBuilder();
-        sb.append(year);
-        sb.append(month < 10 ? "-0":"-");
-        sb.append(month);
-        sb.append(day < 10 ? "-0":"-");
-        sb.append(day);
-
         //获取指定日期的calendar，并返回指定日期是一个星期中的第几天，注意周日算是第一天
-        SimpleDateFormat formatter=new SimpleDateFormat("yyyy-MM-dd");
-        Date date= null;
-        try {
-            date = formatter.parse(sb.toString());
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        Calendar calendar=Calendar.getInstance();
-        calendar.setTime(date);
+        Calendar calendar= Calendar.getInstance();
+        calendar.set(year,month,day);
         return  calendar.get(Calendar.DAY_OF_WEEK);
 
     }

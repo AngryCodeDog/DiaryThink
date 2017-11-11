@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Scroller;
 
+
 import com.example.diarythink.bean.DateInfo;
 import com.example.diarythink.utils.DateUtils;
 
@@ -142,7 +143,6 @@ public class MonthView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         mCanvas = canvas;
-        Log.e("TAG","MonthView--onDraw");
         Calendar calendar = Calendar.getInstance();
         calendar.set(curPageYear,curPageMonth,1);
         //画左边界面的日历
@@ -157,7 +157,7 @@ public class MonthView extends View {
 
     }
 
-    private void draw(Canvas canvas,int x,int y,int year,int month){
+    private void draw(Canvas canvas, int x, int y, int year, int month){
         Log.e("TAG","MonthView--Draw: "+year+"-"+month);
         canvas.save();
         canvas.translate(x,0);
@@ -212,20 +212,24 @@ public class MonthView extends View {
         dateInfoArray = DateUtils.buildMonthG(year,month);
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 7; j++) {
-                if(dateInfoArray[i][j].date != 0 ) {
-                    float yy = monthRegionsSix[i][j].getBounds().centerY() - (paint.descent() + paint.ascent()) / 2;
+                float yy = monthRegionsSix[i][j].getBounds().centerY() - (paint.descent() + paint.ascent()) / 2;
+                if(dateInfoArray[i][j].month == month){
+                    paint.setColor(Color.BLACK);
                     canvas.drawText(dateInfoArray[i][j].date + "", monthRegionsSix[i][j].getBounds().centerX() - paint.descent(), yy, paint);
-                    if(!TextUtils.isEmpty(dateInfoArray[i][j].desc)){//如果有备注信息，则绘制备注信息
-                        Paint paint1 = new Paint();
-                        paint1.setColor(Color.YELLOW);
-                        paint1.setStyle(Paint.Style.STROKE);
-                        paint1.setStrokeWidth(3f);
-                        canvas.drawRect(monthRegionsSix[i][j].getBounds(),paint1);
-                        paint1.setStrokeWidth(1f);
-                        paint1.setTextSize(20);
-                        paint1.setStyle(Paint.Style.FILL_AND_STROKE);
-                        canvas.drawText(dateInfoArray[i][j].desc,monthRegionsSix[i][j].getBounds().left + paint1.descent(), yy-(paint.ascent()+paint.descent())+5, paint1);
-                    }
+                }else{//如果不是当月，则绘制灰色颜色
+                    paint.setColor(Color.GRAY);
+                    canvas.drawText(dateInfoArray[i][j].date + "", monthRegionsSix[i][j].getBounds().centerX() - paint.descent(), yy, paint);
+                }
+                if(!TextUtils.isEmpty(dateInfoArray[i][j].desc)){//如果有备注信息，则绘制备注信息
+                    Paint paint1 = new Paint();
+                    paint1.setColor(Color.YELLOW);
+                    paint1.setStyle(Paint.Style.STROKE);
+                    paint1.setStrokeWidth(3f);
+                    canvas.drawRect(monthRegionsSix[i][j].getBounds(),paint1);
+                    paint1.setStrokeWidth(1f);
+                    paint1.setTextSize(20);
+                    paint1.setStyle(Paint.Style.FILL_AND_STROKE);
+                    canvas.drawText(dateInfoArray[i][j].desc,monthRegionsSix[i][j].getBounds().left + paint1.descent(), yy-(paint.ascent()+paint.descent())+5, paint1);
                 }
             }
         }
@@ -282,7 +286,7 @@ public class MonthView extends View {
                     //直接通过坐标来计算出所属区域，再得到日期信息
                     int dateX = (int) (Math.ceil(event.getX()/monthRegionsSix[0][0].getBounds().width()) - 1);
                     int dateY = (int) (Math.ceil(event.getY()/monthRegionsSix[0][0].getBounds().height()) - 1);
-                    dateInfoArray = DateUtils.buildMonthG(curPageYear,curPageMonth+1);
+                    dateInfoArray = DateUtils.buildMonthG(curPageYear,curPageMonth);
                     if (onClickDateListener != null) {
                         dateX = dateX > 0 ? dateX : 0;
                         dateY = dateY > 0 ? dateY : 0;
@@ -324,11 +328,11 @@ public class MonthView extends View {
 
 
     public interface OnMonthChangeListener{
-        void monthChange(int month,int year);
+        void monthChange(int month, int year);
     }
 
     public interface OnClickDateListener{
-        void clickDate(int month,int date);
+        void clickDate(int month, int date);
     }
 
 }

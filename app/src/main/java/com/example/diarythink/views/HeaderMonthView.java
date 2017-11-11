@@ -10,6 +10,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+
 import com.example.diarythink.HeaderMonthInfo;
 
 import java.util.Calendar;
@@ -108,7 +109,7 @@ public class HeaderMonthView extends View {
         return isRefreshData;
     }
 
-    private Calendar getCalendar(int year,int month,int date){
+    private Calendar getCalendar(int year, int month, int date){
         Calendar calendar = Calendar.getInstance();
         calendar.set(year,month,date);
         return calendar;
@@ -136,7 +137,7 @@ public class HeaderMonthView extends View {
         }
     }
 
-    private void draw(Canvas canvas,int x,int y){
+    private void draw(Canvas canvas, int x, int y){
 
         Paint paint = new Paint();
         for (int i = 0; i < 7; i++) {
